@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>श्लोकबोधिनी · Shloka Bodhini</title>
+<meta name="description" content="आयुर्वेदीय संस्कृत श्लोकों का पदच्छेद, अन्वय, शब्दार्थ (शब्दकल्पद्रुम, वाचस्पत्यम्, अमरकोश, Monier-Williams, Apte) और हिन्दी-English व्याख्या।">
+<meta name="theme-color" content="#2f5d47">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+@font-face{font-family:"Tiro SB";src:url(fonts/TiroDevanagariSanskrit-Regular.ttf) format("truetype");font-display:swap}
+@font-face{font-family:"Mukta SB";src:url(fonts/Mukta-Regular.ttf) format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Mukta SB";src:url(fonts/Mukta-Bold.ttf) format("truetype");font-weight:700;font-display:swap}
+/* Layout: one reading column like a pothi page; tabs switch between śloka-vyākhyā, kośa search and settings */
+:root{
+  --bg:#f4f6f1; --paper:#fbfcf8; --fg:#1b2420; --muted:#5b665f; --rule:#d5dccf;
+  --accent:#7a4f00; --haldi:#e3ad3c; --leaf:#2f5d47; --chip:#eef1e8; --err:#b3261e;
+  --f-sk:"Tiro SB","Noto Serif Devanagari","Nirmala UI","Mangal",serif;
+  --f-body:"Mukta SB","Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111612; --paper:#171d18; --fg:#e4e8e0; --muted:#9aa59c; --rule:#2c362e;
+  --accent:#e6b65a; --leaf:#7fbf9c; --chip:#1f2720; --err:#f2b8b5; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:max(20px,env(safe-area-inset-top,0px)) 64px}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--fg);padding-bottom:12px}
+.brand h1{font-family:var(--f-sk);font-weight:400;font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;margin:0}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.95rem}
+.pill{display:flex;gap:4px;background:var(--chip);border-radius:999px;padding:4px;flex-wrap:wrap}
+.pill button{border:0;background:transparent;color:var(--fg);font:inherit;font-size:.92rem;padding:4px 12px;border-radius:999px;cursor:pointer}
+.pill button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--rule)}
+nav.tabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 14px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--haldi)}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--haldi);outline-offset:2px}
+
+.desk{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.desk label,.lbl{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+textarea{width:100%;min-height:110px;resize:vertical;font-family:var(--f-sk);font-size:1.3rem;line-height:1.7;padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;min-width:0}
+.field input,.field select{font:inherit;padding:9px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg);width:100%}
+.btn{font:inherit;font-weight:700;border:0;border-radius:8px;padding:10px 20px;cursor:pointer;background:var(--leaf);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--rule);font-weight:400}
+.btn:disabled{opacity:.55;cursor:wait}
+.tries{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem;color:var(--muted)}
+.tries button,.chipbtn{font-family:var(--f-sk);font-size:.95rem;border:1px solid var(--rule);background:var(--chip);color:var(--fg);border-radius:999px;padding:3px 12px;cursor:pointer}
+.status{font-size:.95rem;color:var(--muted);min-height:1.4em}
+.status.err{color:var(--err)}
+.status a{color:inherit}
+
+.result{display:flex;flex-direction:column;gap:28px}
+.badge{display:inline-block;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;background:var(--haldi);color:#2a1d00;padding:2px 10px;border-radius:4px;font-weight:700}
+.verse{border-left:4px solid var(--haldi);padding:6px 0 6px 20px;display:flex;flex-direction:column;gap:8px}
+.verse .dev{font-family:var(--f-sk);font-size:clamp(1.45rem,4vw,2.1rem);line-height:1.6;white-space:pre-line;margin:0}
+.verse .iast{font-family:var(--f-sk);font-style:italic;color:var(--muted);font-size:1.05rem;white-space:pre-line;margin:0}
+.ref{font-size:.95rem;color:var(--accent);font-weight:700}
+.ref small{color:var(--muted);font-weight:400}
+.corr{font-size:.9rem;color:var(--muted)}
+section.block{display:flex;flex-direction:column;gap:12px}
+section.block>h2{margin:0;font-family:var(--f-sk);font-weight:400;font-size:1.5rem;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:6px}
+section.block>h2 span{font-size:.95rem;color:var(--muted);font-family:var(--f-body)}
+.sk{font-family:var(--f-sk);font-size:1.18rem;line-height:1.8}
+.bi{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.bi>div{min-width:0}
+.bi h3{margin:0 0 4px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bi p{margin:0 0 .7em;max-width:65ch}
+body[data-lang="hi"] .en-only, body[data-lang="en"] .hi-only{display:none}
+body[data-lang="hi"] .bi, body[data-lang="en"] .bi{grid-template-columns:1fr}
+@media (max-width:720px){.bi{grid-template-columns:1fr}}
+
+.words{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.word{display:grid;grid-template-columns:minmax(140px,210px) 1fr;gap:18px;padding:16px 0;border-bottom:1px solid var(--rule)}
+.word .pada{font-family:var(--f-sk);font-size:1.4rem;line-height:1.3;color:var(--accent);overflow-wrap:anywhere}
+.word .gram{font-size:.85rem;color:var(--muted);margin-top:4px}
+.word .vig{font-family:var(--f-sk);font-size:1rem;margin-top:6px}
+.word .body{min-width:0;display:flex;flex-direction:column;gap:10px}
+.word .body p{margin:0}
+.ayu{font-size:.93rem;background:var(--chip);border-radius:6px;padding:8px 12px}
+@media (max-width:640px){.word{grid-template-columns:1fr;gap:8px}}
+
+/* kosha entries */
+.kb{display:flex;flex-direction:column;gap:8px;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--paper)}
+.kb-h{font-family:var(--f-sk);font-size:1.15rem;color:var(--leaf);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.kb-h small{font-family:var(--f-body);font-size:.8rem;color:var(--muted)}
+.ke{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;font-size:.95rem}
+.ke>b{font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;background:var(--chip);border:1px solid var(--rule);border-radius:4px;padding:2px 7px;white-space:nowrap;color:var(--leaf);margin-top:3px}
+.kt{min-width:0;overflow-wrap:anywhere}
+.kt .dv{font-family:var(--f-sk);font-size:1.02rem;line-height:1.75}
+.kt.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.more{grid-column:2;justify-self:start;background:none;border:0;color:var(--leaf);font:inherit;font-size:.85rem;padding:0;cursor:pointer;text-decoration:underline}
+.kt ol{margin:0;padding-left:1.2em}
+.ak-v{font-family:var(--f-sk);font-size:1.02rem;color:var(--fg);margin-top:2px}
+.ak-m{color:var(--muted);font-size:.88rem}
+.knone{color:var(--muted);font-size:.9rem}
+.hwlist{display:flex;flex-wrap:wrap;gap:6px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.term{border:1px solid var(--rule);border-radius:8px;padding:12px 14px;background:var(--paper);min-width:0}
+.term .t{font-family:var(--f-sk);font-size:1.2rem;color:var(--accent)}
+.term p{margin:4px 0 0;font-size:.93rem}
+.comm{display:flex;flex-direction:column;gap:12px}
+.comm .c{border-left:2px solid var(--rule);padding-left:14px}
+.comm .c b{font-family:var(--f-sk);font-weight:400;font-size:1.1rem}
+.comm .c p{margin:2px 0}
+.note{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--rule);padding-top:12px;max-width:80ch}
+.tools{display:flex;flex-wrap:wrap;gap:10px}
+.history{display:flex;flex-direction:column;gap:8px}
+.history h2{font-family:var(--f-sk);font-weight:400;font-size:1.3rem;margin:0}
+.history ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.history li button{width:100%;text-align:left;font-family:var(--f-sk);font-size:1rem;background:var(--paper);border:1px solid var(--rule);color:var(--fg);border-radius:8px;padding:8px 12px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history li small{font-family:var(--f-body);color:var(--muted);margin-left:8px}
+.prose{max-width:70ch}
+.prose ol{padding-left:1.3em}
+.prose li{margin-bottom:6px}
+.prose code{background:var(--chip);padding:1px 6px;border-radius:4px}
+footer{font-size:.82rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px}
+footer a{color:inherit}
+</style>
+</head>
+<body data-lang="both">
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>श्लोकबोधिनी</h1>
+      <p>आयुर्वेदीय श्लोकों का पदच्छेद, अन्वय, कोश-आधारित शब्दार्थ और हिन्दी · English व्याख्या</p>
+    </div>
+    <div class="pill" role="group" aria-label="भाषा / Language">
+      <button type="button" data-l="both" aria-pressed="true">हिं + En</button>
+      <button type="button" data-l="hi" aria-pressed="false">हिन्दी</button>
+      <button type="button" data-l="en" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="shloka" aria-selected="true">श्लोक व्याख्या</button>
+    <button type="button" role="tab" data-tab="kosha" aria-selected="false">कोश खोज</button>
+    <button type="button" role="tab" data-tab="settings" aria-selected="false">सेटिंग</button>
+  </nav>
+
+  <!-- ===== Shloka tab ===== -->
+  <div id="tab-shloka" class="wrap" style="gap:24px">
+    <form class="desk" id="desk">
+      <label for="shloka">श्लोक लिखें / Paste the śloka (देवनागरी या IAST)</label>
+      <textarea id="shloka" placeholder="समदोषः समाग्निश्च समधातुमलक्रियः। प्रसन्नात्मेन्द्रियमनाः स्वस्थ इत्यभिधीयते॥"></textarea>
+      <div class="row">
+        <div class="field"><label for="ref">सन्दर्भ (वैकल्पिक) / Reference</label><input id="ref" placeholder="जैसे: च.वि. 8/22"></div>
+        <div class="field" style="flex:0 1 200px"><label for="depth">व्याख्या / Depth</label>
+          <select id="depth"><option value="detailed">विस्तृत / Detailed</option><option value="brief">संक्षिप्त / Brief</option></select></div>
+        <button class="btn" id="go" type="submit">अर्थ खोजें · Explain</button>
+      </div>
+      <div class="tries"><span>उदाहरण:</span>
+        <button type="button" data-s="विगृह्य कथयेद्युक्त्या युक्तं च न निवारयेत्। विगृह्यभाषा तीव्रं हि केषाञ्चिद्द्रोहमावहेत्॥" data-r="च.वि. 8/22">विगृह्य कथयेद्युक्त्या…</button>
+        <button type="button" data-s="हिताहितं सुखं दुःखमायुस्तस्य हिताहितम्। मानं च तच्च यत्रोक्तमायुर्वेदः स उच्यते॥" data-r="च.सू. 1/41">हिताहितं सुखं दुःखम्…</button>
+        <button type="button" data-s="वायुः पित्तं कफश्चोक्तः शारीरो दोषसंग्रहः। मानसः पुनरुद्दिष्टो रजश्च तम एव च॥" data-r="च.सू. 1/57">वायुः पित्तं कफश्चोक्तः…</button>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </form>
+    <div id="out"></div>
+    <div class="history" id="historyBox" hidden>
+      <h2>हाल के श्लोक</h2>
+      <ul id="history"></ul>
+    </div>
+  </div>
+
+  <!-- ===== Kosha tab ===== -->
+  <div id="tab-kosha" class="wrap" style="gap:20px" hidden>
+    <form class="desk" id="kdesk">
+      <label for="kq">शब्द खोजें / Look up a word (देवनागरी, IAST या SLP1)</label>
+      <div class="row">
+        <div class="field"><input id="kq" placeholder="जैसे: दोष, आत्मन्, अग्नि, rasāyana" autocomplete="off" style="font-family:var(--f-sk);font-size:1.15rem"></div>
+        <button class="btn" type="submit">खोजें · Search</button>
+      </div>
+      <p class="lbl" style="margin:0;text-transform:none;letter-spacing:0;font-weight:400">यह खोज बिना इंटरनेट-AI के, सीधे कोशों के डिजिटल पाठ से होती है। प्रातिपदिक रूप (दोष, मनस्) सबसे अच्छा काम करता है।</p>
+    </form>
+    <div id="kout"></div>
+  </div>
+
+  <!-- ===== Settings tab ===== -->
+  <div id="tab-settings" class="wrap" style="gap:20px" hidden>
+    <form class="desk" id="sdesk">
+      <div class="field"><label for="gkey">Google Gemini API key (मुफ़्त)</label>
+        <input id="gkey" type="password" placeholder="AIza…" autocomplete="off"></div>
+      <div class="field"><label for="gmodel">Model</label>
+        <input id="gmodel" placeholder="gemini-flash-latest"></div>
+      <div class="row">
+        <button class="btn" type="submit">सहेजें · Save</button>
+        <button class="btn ghost" type="button" id="gtest">key जाँचें · Test</button>
+        <button class="btn ghost" type="button" id="gclear">key हटाएँ</button>
+      </div>
+      <div class="status" id="sstatus" role="status" aria-live="polite"></div>
+    </form>
+    <div class="prose">
+      <h2 style="font-family:var(--f-sk);font-weight:400;margin:0 0 6px">मुफ़्त key कैसे बनाएँ</h2>
+      <ol>
+        <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> खोलें और अपने Google खाते से साइन-इन करें।</li>
+        <li><b>Create API key</b> दबाएँ। कोई कार्ड या भुगतान नहीं लगता।</li>
+        <li>बनी हुई key (जो <code>AIza</code> से शुरू होती है) कॉपी करके ऊपर डालें और <b>सहेजें</b> दबाएँ।</li>
+      </ol>
+      <p>Key केवल इसी ब्राउज़र में रहती है, किसी और को नहीं भेजी जाती। मुफ़्त सीमा में रोज़ कुछ श्लोक आराम से हो जाते हैं; सीमा पूरी होने पर थोड़ी देर बाद फिर चलेगा।</p>
+      <p>Model बदलने की ज़रूरत सामान्यतः नहीं है। अगर कभी “model not found” आए तो <code>gemini-flash-latest</code> रखें।</p>
+    </div>
+  </div>
+
+  <footer>
+    कोश-पाठ: शब्दकल्पद्रुम, वाचस्पत्यम्, Monier-Williams (1899), Apte (1890) — <a href="https://www.sanskrit-lexicon.uni-koeln.de/" target="_blank" rel="noopener">Cologne Digital Sanskrit Dictionaries</a>; अमरकोश — University of Hyderabad (Amba Kulkarni) का डेटा, <a href="https://github.com/indic-dict/stardict-sanskrit" target="_blank" rel="noopener">sanskrit-coders</a> के माध्यम से। व्याख्या AI (Google Gemini) द्वारा — शोध में उद्धृत करने से पहले मूल ग्रन्थ से मिलान करें।
+  </footer>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
