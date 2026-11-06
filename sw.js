@@ -1,5 +1,5 @@
 // Offline cache: the app shell up front, kosha shards as they are opened.
-const V = "sb-v1";
+const V = "sb-v2";
 const SHELL = ["./", "index.html", "app.js", "prompt.js", "manifest.webmanifest", "data/index.json",
   "fonts/TiroDevanagariSanskrit-Regular.ttf", "fonts/Mukta-Regular.ttf", "fonts/Mukta-Bold.ttf",
   "icons/icon-192.png", "icons/icon-512.png"];

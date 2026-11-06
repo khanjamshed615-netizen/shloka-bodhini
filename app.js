@@ -291,9 +291,34 @@ async function callGemini(prompt, key, model) {
   if (!text) { const e = new Error(j.promptFeedback?.blockReason || "empty"); e.status = 0; throw e; }
   return text;
 }
+// Free-tier Gemini is often "overloaded" (503) or hits a per-model limit (429).
+// Retry once, then fall back to other free models, each with its own quota.
+const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function callWithFallback(prompt, key, onTry) {
+  const models = [...new Set([getModel(), ...FALLBACK_MODELS])];
+  let last;
+  for (const m of models) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      onTry?.(m, attempt);
+      try { return await callGemini(prompt, key, m); }
+      catch (e) {
+        last = e;
+        if (e.status === 503 || e.status === 500) { if (attempt === 0) { await sleep(4000); continue; } break; }
+        if (e.status === 429 || e.status === 404) break;   // try next model
+        throw e;                                            // bad key etc.: stop
+      }
+    }
+  }
+  throw last;
+}
 async function explain(shloka, ref, depth) {
   const key = getKey();
-  if (key) return parseJSON(await callGemini(buildPrompt(shloka, ref, depth), key, getModel()));
+  if (key) {
+    const text = await callWithFallback(buildPrompt(shloka, ref, depth), key, (m, a) =>
+      status($("#status"), a ? `Gemini व्यस्त है — दोबारा कोशिश (${m})…` : `श्लोक का विश्लेषण हो रहा है… (${m}, 20–60 सेकंड)`));
+    return parseJSON(text);
+  }
   // No personal key: try the site's own server function (only exists on a Vercel deployment).
   let r;
   try { r = await fetch("api/explain", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shloka, ref, depth }) }); }
@@ -310,7 +335,7 @@ function aiError(e) {
   if (e?.status === 429 || /quota|rate/i.test(m)) return "आज की मुफ़्त सीमा पूरी हो गई या बहुत जल्दी-जल्दी अनुरोध हुए। थोड़ी देर बाद फिर कोशिश करें।";
   if (e?.status === 400 && /key/i.test(m) || e?.status === 403) return `Gemini key सही नहीं लग रही। <a href="#settings" data-goto="settings">सेटिंग</a> में key दोबारा जाँचें।`;
   if (e?.status === 404) return `Model नहीं मिला। <a href="#settings" data-goto="settings">सेटिंग</a> में model “${DEFAULT_MODEL}” रखें।`;
-  if (e?.status === 503 || e?.status === 500) return "Gemini सर्वर अभी व्यस्त है — एक मिनट बाद फिर कोशिश करें।";
+  if (e?.status === 503 || e?.status === 500) return "Gemini के सभी मुफ़्त models अभी व्यस्त हैं (कई बार कोशिश की गई)। 2–3 मिनट बाद फिर ‘अर्थ खोजें’ दबाएँ।<br><small>Google: " + esc(m.slice(0, 140)) + "</small>";
   if (/json/i.test(m)) return "उत्तर ठीक से नहीं बन पाया — एक बार फिर ‘अर्थ खोजें’ दबाएँ।";
   if (e instanceof TypeError) return "इंटरनेट कनेक्शन जाँचें — AI व्याख्या के लिए इंटरनेट चाहिए।";
   return "कुछ गड़बड़ हुई: " + esc(m.slice(0, 160));
